@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Favorites</title>
+</head>
+<body>
+    <h1>Your Favorite Cities</h1>
+    <ul>
+        {% for favorite in favorites %}
+            <li>{{ favorite.city }}, {{ favorite.state }}, {{ favorite.country }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+
