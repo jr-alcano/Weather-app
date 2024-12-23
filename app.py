@@ -2,13 +2,16 @@ from flask import Flask, render_template, redirect, flash, session, url_for, req
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 import requests
+import os
+
 
 app = Flask(__name__)
 
 # Configurations
 app.secret_key = 'secret-key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres@localhost/weather_app_db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 
 db = SQLAlchemy(app)
 
