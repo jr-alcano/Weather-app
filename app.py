@@ -5,10 +5,13 @@ import requests
 import os
 
 # Local only
+# Use dotenv only in development
 if os.environ.get('FLASK_ENV') != 'production':
-    from dotenv import load_dotenv
-    load_dotenv()
-
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        pass  # dotenv is not required in production
 
 app = Flask(__name__)
 
