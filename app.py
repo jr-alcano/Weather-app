@@ -1,11 +1,14 @@
-from dotenv import load_dotenv
 from flask import Flask, render_template, redirect, flash, session, url_for, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 import requests
 import os
 
-load_dotenv()
+# Local only
+if os.environ.get('FLASK_ENV') != 'production':
+    from dotenv import load_dotenv
+    load_dotenv()
+
 
 app = Flask(__name__)
 
