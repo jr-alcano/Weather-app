@@ -1,15 +1,17 @@
+from dotenv import load_dotenv
 from flask import Flask, render_template, redirect, flash, session, url_for, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 import requests
 import os
 
+load_dotenv()
 
 app = Flask(__name__)
 
 # Configurations
-app.secret_key = 'secret-key'
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+app.secret_key = os.environ.get('SECRET_KEY', 'fallback-default-secret-key')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL',  'postgresql://postgres@localhost/weather_app_db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
