@@ -1,12 +1,13 @@
 from flask import Flask, render_template, redirect, flash, session, url_for, request
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import inspect
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 import requests
 import os
 
 # Local only
 # Use dotenv only in development
-if os.environ.get('FLASK_ENV') != 'production':
+if os.environ.get('FLASK_DEBUG') != 'false':
     try:
         from dotenv import load_dotenv
         load_dotenv()
@@ -303,6 +304,7 @@ def logout():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-        print("Tables created:", db.engine.table_names())
+        inspector = inspect(db.engine)
+        print("Tables created:", inspector.get_table_names())
     app.run(debug=True)
 
