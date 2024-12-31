@@ -303,8 +303,12 @@ def logout():
 
 if __name__ == '__main__':
     with app.app_context():
+        # Create all tables if they don't exist
         db.create_all()
         inspector = inspect(db.engine)
         print("Tables created:", inspector.get_table_names())
-    app.run(debug=True)
+
+    # Use dynamic port assignment for deployment
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
 
