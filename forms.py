@@ -1,7 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import InputRequired, Length, Email, EqualTo
+from wtforms.validators import InputRequired, Length, Email, EqualTo, Regexp
 
+#this file was a past idea, but I ended up not using flask wtf forms
 class RegisterForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=4, max=25)])
     email = StringField('Email', validators=[InputRequired(), Email()])
@@ -13,3 +14,4 @@ class LoginForm(FlaskForm):
     username = StringField('Username', validators=[InputRequired(), Length(min=4, max=25)])
     password = PasswordField('Password', validators=[InputRequired()])
     submit = SubmitField('Login')
+

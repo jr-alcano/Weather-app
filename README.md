@@ -51,8 +51,7 @@ Nominatim was not orginally part of the plan, I learned later that Open Meteo on
 So Nominatim was used to convert a general location like Chicago, Illinois into coordinates which I could use for Open Meteo.
     
    
-
-🗃️ Repository Notes
+ Repository Notes
 
 The repository includes:
 
@@ -60,3 +59,43 @@ The repository includes:
     templates/: HTML templates rendered by Flask.
     static/: CSS and JavaScript files for styling and interactivity.
     requirements.txt: List of dependencies.
+
+How to run the application on your machine:
+
+1. Create a virtual environment
+python3 -m venv venv
+
+2. Activate the virtual environment
+source venv/bin/activate
+
+3. Install dependencies from requirements.txt
+pip install -r requirements.txt
+
+4. Start PostgreSQL server
+sudo service postgresql start
+
+5. Log in and create the weather database
+sudo -u postgres psql
+CREATE DATABASE weather_app_db;
+\q
+
+6. Create a .env file with following contents
+# Local PostgreSQL Database
+DATABASE_URL=postgresql://postgres@localhost/weather_app_db
+
+# Secret Key for Flask Sessions
+SECRET_KEY=<your-secret-key>
+
+FLASK_DEBUG=true
+
+7. Initialize and create the database from the flask shell
+flask shell
+
+In the shell, run:
+from app import db
+db.create_all()
+exit()
+
+8. Run the app and navigate to http://127.0.0.1:5000
+flask run
+

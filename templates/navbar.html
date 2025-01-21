@@ -1,0 +1,15 @@
+<nav class="navbar">
+    <div class="navbar-container">
+        {% if current_user.is_authenticated %}
+            <a href="/" class="nav-link">Home</a>
+            <a href="#favorites" class="nav-link">Favorites</a>
+            <form method="POST" action="/logout" class="logout-form">
+                <button type="submit" class="nav-link">Logout</button>
+            </form>
+        {% else %}
+            <a href="/" class="nav-link">Home</a>
+            <a href="/register" class="nav-link">Register</a>
+            <a href="/login" class="nav-link">Login</a>
+        {% endif %}
+    </div>
+</nav>

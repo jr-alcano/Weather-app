@@ -1,111 +1,77 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-    <!-- Navigation Bar -->
-    <nav class="navbar">
-        <div class="navbar-container">
-            <a href="/" class="nav-link">Home</a>
-            {% if current_user.is_authenticated %}
-                <a href="#favorites" class="nav-link">Favorites</a>
-                <form method="POST" action="/logout" class="nav-link logout-form">
-                    <button type="submit">Logout</button>
-                </form>
-            {% else %}
-                <a href="/register" class="nav-link">Register</a>
-                <a href="/login" class="nav-link">Login</a>
-            {% endif %}
+{% extends "base.html" %}
+{% block title %}Weather Dashboard{% endblock %}
+{% block content %}
+<h1>Weather Dashboard</h1>
+<!-- Weather Search Form -->
+<form method="POST" action="/" class="weather-form">
+    <input type="text" name="city" placeholder="Enter city name" required>
+    <input type="text" name="state" placeholder="Enter state (optional)">
+    <input type="text" name="country" placeholder="Enter country (default is USA)" value="USA">
+    <button type="submit">Get Weather</button>
+</form>
+
+<!-- Weather Data Display -->
+<div id="weather">
+    {% if weather %}
+        <div class="weather-card">
+            <h2>{{ weather.get('city', 'Unknown Location') }} Weather</h2>
+            <p>
+                <strong>Current Temp:</strong> {{ weather.get('current_temp', 'N/A') }}°C {{ weather_emotes.get(weather.get('current_description', 'Unknown'), '') }}<br>
+                <strong>Current Conditions:</strong> {{ weather.get('current_description', 'N/A') }}
+            </p>
+            
+            <!-- Add to Favorites Button -->
+            <form method="POST" action="/add-favorite" class="add-favorite-form">
+                <input type="hidden" name="city" value="{{ weather.get('city') }}">
+                <input type="hidden" name="state" value="{{ weather.get('state') }}">
+                <input type="hidden" name="country" value="{{ weather.get('country') }}">
+                <button type="submit" class="favorite-button">⭐ Add to Favorites</button>
+            </form>
+            
+            <!-- Daily Weather Forecast -->
+            {% for i in range(weather['daily']['time']|length) %}
+                <div class="forecast-day">
+                    <p>
+                        <strong>Date:</strong> {{ weather['daily']['time'][i] }}<br>
+                        <strong>Max Temp:</strong> {{ weather['daily']['temperature_2m_max'][i] }}°C<br>
+                        <strong>Min Temp:</strong> {{ weather['daily']['temperature_2m_min'][i] }}°C<br>
+                        <strong>Average Temp:</strong> {{ weather['daily']['temperature_2m_avg'][i] }}°C<br>
+                        <strong>Predicted Conditions:</strong> {{ weather['daily']['descriptions'][i] }} {{ weather_emotes.get(weather['daily']['descriptions'][i], '') }}<br>
+                        {% if weather['daily'].get('wind_speed_10m_max') %}
+                            <strong>Wind Speed:</strong> {{ weather['daily']['wind_speed_10m_max'][i] }} km/h<br>
+                        {% else %}
+                            <strong>Wind Speed:</strong> N/A<br>
+                        {% endif %}
+                        <strong>Precipitation:</strong> {{ weather['daily']['precipitation_sum'][i] }} mm<br>
+                    </p>
+                </div>
+                <hr>
+            {% endfor %}
         </div>
-    </nav>
-
-    <h1>Weather Dashboard</h1>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <ul>
-                {% for category, message in messages %}
-                    <li class="{{ category }}">{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-
-    <!-- Weather Search Form -->
-    <form method="POST" action="/" class="weather-form">
-        <input type="text" name="city" placeholder="Enter city name" required>
-        <input type="text" name="state" placeholder="Enter state (optional)">
-        <input type="text" name="country" placeholder="Enter country (default is USA)" value="USA">
-        <button type="submit">Get Weather</button>
-    </form>
-
-    <!-- Weather Data Display -->
-    <div id="weather">
-        {% if weather %}
-            <div class="weather-card">
-                <h2>{{ weather.get('city', 'Unknown Location') }} Weather</h2>
-                <p>
-                    <strong>Current Temp:</strong> {{ weather.get('current_temp', 'N/A') }}°C {{ weather_emotes.get(weather.get('current_description', 'Unknown'), '') }}<br>
-                    <strong>Current Conditions:</strong> {{ weather.get('current_description', 'N/A') }}
-                </p>
-                
-                <!-- Add to Favorites Button - Moved Here -->
-                <form method="POST" action="/add-favorite" class="add-favorite-form">
-                    <input type="hidden" name="city" value="{{ weather.get('city') }}">
-                    <input type="hidden" name="state" value="{{ weather.get('state') }}">
-                    <input type="hidden" name="country" value="{{ weather.get('country') }}">
-                    <button type="submit" class="favorite-button">⭐ Add to Favorites</button>
-                </form>
-                
-                <!-- Daily Weather Forecast -->
-                {% for i in range(weather['daily']['time']|length) %}
-                    <div class="forecast-day">
-                        <p>
-                            <strong>Date:</strong> {{ weather['daily']['time'][i] }}<br>
-                            <strong>Max Temp:</strong> {{ weather['daily']['temperature_2m_max'][i] }}°C<br>
-                            <strong>Min Temp:</strong> {{ weather['daily']['temperature_2m_min'][i] }}°C<br>
-                            <strong>Average Temp:</strong> {{ weather['daily']['temperature_2m_avg'][i] }}°C<br>
-                            <strong>Predicted Conditions:</strong> {{ weather['daily']['descriptions'][i] }} {{ weather_emotes.get(weather['daily']['descriptions'][i], '') }}<br>
-                            {% if weather['daily'].get('wind_speed_10m_max') %}
-                                <strong>Wind Speed:</strong> {{ weather['daily']['wind_speed_10m_max'][i] }} km/h<br>
-                            {% else %}
-                                <strong>Wind Speed:</strong> N/A<br>
-                            {% endif %}
-                            <strong>Precipitation:</strong> {{ weather['daily']['precipitation_sum'][i] }} mm<br>
-                        </p>
-                    </div>
-                    <hr>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p>No weather data available. Please submit a search.</p>
-        {% endif %}
-    </div>
-
-
-    <!-- Favorites List -->
-    {% if current_user.is_authenticated and favorites %}
-        <div id="favorites">
-            <h2>Your Favorite Cities</h2>
-            <div class="favorites-grid">
-                {% for favorite in favorites %}
-                    <div class="favorite-card">
-                        <a href="{{ url_for('show_favorite', favorite_id=favorite.id) }}">
-                            <strong>{{ favorite.city }}</strong>
-                            {% if favorite.state %}, {{ favorite.state }}{% endif %}
-                            , {{ favorite.country }}
-                        </a>
-                        <form method="POST" action="/remove-favorite" class="remove-favorite-form">
-                            <input type="hidden" name="city_id" value="{{ favorite.id }}">
-                            <button type="submit">Remove</button>
-                        </form>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
+    {% else %}
+        <p>No weather data available. Please submit a search.</p>
     {% endif %}
-</body>
-</html>
+</div>
+
+<!-- Favorites List -->
+{% if current_user.is_authenticated and favorites %}
+    <div id="favorites">
+        <h2>Your Favorite Cities</h2>
+        <div class="favorites-grid">
+            {% for favorite in favorites %}
+                <div class="favorite-card">
+                    <a href="{{ url_for('show_favorite', favorite_id=favorite.id) }}">
+                        <strong>{{ favorite.city }}</strong>
+                        {% if favorite.state %}, {{ favorite.state }}{% endif %}
+                        , {{ favorite.country }}
+                    </a>
+                    <form method="POST" action="/remove-favorite" class="remove-favorite-form">
+                        <input type="hidden" name="city_id" value="{{ favorite.id }}">
+                        <button type="submit">Remove</button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

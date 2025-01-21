@@ -180,7 +180,10 @@ def index():
     weather = None
     favorites = []
     if current_user.is_authenticated:
+        print(f"User is authenticated: {current_user.username}")
         favorites = FavoriteCity.query.filter_by(user_id=current_user.id).all()
+    else:
+        print("No user is logged in.")
 
     if request.method == 'POST':
         city = request.form.get('city')
@@ -191,6 +194,7 @@ def index():
             weather = get_weather_data(city, state, country)
 
     return render_template('index.html', weather=weather, favorites=favorites, weather_emotes=weather_emotes)
+
 
 @app.route('/add-favorite', methods=['POST'])
 @login_required
@@ -246,29 +250,38 @@ def show_favorite(favorite_id):
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    """Register route for new users."""
     if request.method == 'POST':
-        username = request.form['username']
-        email = request.form['email']
-        password = request.form['password']
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
 
-        # Check for duplicate username or email
+        # Check if username or email already exists
         existing_user = User.query.filter(
             (User.username == username) | (User.email == email)
         ).first()
-
         if existing_user:
-            flash('Email or username already exists.', 'error')
+            flash("Email or username already exists.", "error")
             return redirect('/register')
 
-        # Create the new user
-        user = User(username=username, email=email, password=password)
-        db.session.add(user)
-        db.session.commit()
+        # Password validation: length, at least one number, and one special character
+        if (len(password) < 8 or
+                not any(char.isdigit() for char in password) or
+                not any(char in "!@#$%^&*()_+-=[]{}|;:,.<>?/~`" for char in password)):
+            flash("Invalid password. Password must be at least 8 characters long, contain at least one number, and one special character.", "error")
+            return redirect('/register')
 
-        flash('Registration successful! Please log in.', 'success')
+        # Add new user to the database if all validations pass
+        new_user = User(username=username, email=email, password=password)
+        db.session.add(new_user)
+        db.session.commit()
+        flash("Registration successful! Please log in.", "success")
         return redirect('/login')
 
     return render_template('register.html')
+
+
+
 
 
 
@@ -294,12 +307,30 @@ def login():
     return render_template('login.html')
 
 
+
+
 @app.route('/logout', methods=['POST'])
 @login_required
 def logout():
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect('/')
+
+@app.route('/remove-favorite', methods=['POST'])
+@login_required
+def remove_favorite():
+    city_id = request.form.get('city_id')
+    favorite = FavoriteCity.query.get(city_id)
+
+    if favorite and favorite.user_id == current_user.id:
+        db.session.delete(favorite)
+        db.session.commit()
+        flash("Favorite city removed successfully!", "success")
+    else:
+        flash("Could not find favorite city or access denied.", "error")
+    
+    return redirect(url_for('index'))
+
 
 if __name__ == '__main__':
     with app.app_context():
